@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="styles.css">
+	<title>Quiz</title>
+</head>
+<body>
+	<main class="quiz">
+		<header class="quiz-header">
+			<h1 class="quiz-logo">Quiz</h1>
+			<p>Quiz sobre seletores CSS</p>
+		</header>
+		<section class="question">
+			<header>
+				<h2 id="question-statement"></h2>
+			</header>
+
+			<ol type="a" id="question-responses"></ol>
+
+			<footer class="quiz-controls">
+				<button id="question-prev">
+					Voltar
+				</button>
+				<button id="question-next" class="question-next">
+					Próximo
+				</button>
+			</footer>
+		</section>
+		<section class="results">
+			<header>
+				<h2>Resultados</h2>
+
+				<p>Você acertou <span id="correctPercent"></span>% das questões e errou <span id="incorrectPercent"></span>% das questões.</p>
+				<p id="congratulations"><strong>Parabéns</strong>, você foi <strong>aprovado</strong> com mais de 75% de acerto.</p>
+			</header>
+
+			<ol type="a" id="question-responses">
+			</ol>
+		</section>
+	</main>
+
+	<script src="quiz.js"></script>
+</body>
+</html>
