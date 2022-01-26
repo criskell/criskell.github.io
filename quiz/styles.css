@@ -9,6 +9,8 @@ body {
 	font-family: "Open Sans", sans-serif;
 	font-size: 14px;
 	background: #CFD8DC;
+	margin: 0;
+	height: 100vh;
 }
 
 main {
