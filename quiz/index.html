@@ -1,46 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="styles.css">
-	<title>Quiz</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Quiz - Desafio 15</title>
 </head>
 <body>
-	<main class="quiz">
-		<header class="quiz-header">
-			<h1 class="quiz-logo">Quiz</h1>
-			<p>Quiz sobre seletores CSS</p>
-		</header>
-		<section class="question">
-			<header>
-				<h2 id="question-statement"></h2>
-			</header>
+    <main>
+        <header class="quiz-header">
+            <h1>Desafio</h1>
+            <p>Quiz de perguntas</p>
+        </header>
+        <section class="question">
+            <header>
+                <h2 id="question-statement"></h2>
+            </header>
 
-			<ol type="a" id="question-responses"></ol>
+            <ol type="a" id="question-responses">
+            </ol>
 
-			<footer class="quiz-controls">
-				<button id="question-prev">
-					Voltar
-				</button>
-				<button id="question-next" class="question-next">
-					Próximo
-				</button>
-			</footer>
-		</section>
-		<section class="results">
-			<header>
-				<h2>Resultados</h2>
+            <footer>
+                <button class="question-prev">
+                    Voltar
+                </button>
+                <button class="question-next">
+                    Próxima
+                </button>
+            </footer>
+        </section>
+        <section class="results">
+            <h2>Resultados</h2>
 
-				<p>Você acertou <span id="correctPercent"></span>% das questões e errou <span id="incorrectPercent"></span>% das questões.</p>
-				<p id="congratulations"><strong>Parabéns</strong>, você foi <strong>aprovado</strong> com mais de 75% de acerto.</p>
-			</header>
+            <p>Você acertou <span id="correctPercent"></span>% das questões e errou <span id="incorrectPercent"></span>% das questões.</p>
 
-			<ol type="a" id="question-responses">
-			</ol>
-		</section>
-	</main>
+            <div id="congratulations">
+                <p>Uhuuuuuul, juro que estou comemorando por dentro!!!!</p>
 
-	<script src="quiz.js"></script>
+                <p>
+                    Uffa, 15 perguntas. Chegamos ao fim da primeira fase. Vamos seguir logo para a próxima? Sabe que eu sou ansiosa nível hard hehe. Será no endereço abaixo:
+                    <address>
+                        Jardim Botânico - Av. Miguel Estéfano, 3031 - Vila Água Funda, São Paulo - SP, 04301-902
+                    </address>
+                </p>
+            
+                <p>Vamos apenas combinar dia e horário, ok?</p>
+                <p>Um grande beijo!!</p>
+
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3654.983967816622!2d-46.6251290850207!3d-23.640745184643542!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce5b1f2e0fdfaf%3A0x95e9a4c9ac739a1f!2sAv.%20Miguel%20Est%C3%A9fno%2C%203031%20-%20Vila%20da%20Sa%C3%BAde%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2004301-902!5e0!3m2!1spt-BR!2sbr!4v1643247886628!5m2!1spt-BR!2sbr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+
+            <div id="fails">
+                <p>Puxa...que pena, você não atingiu a porcentagem necessária, mínimo 75%, para seguir para a segunda fase. Mas não se preocupe, isso significa que eu preciso falar mais hehe. Façamos o seguinte, vou te falar tudo que precisar saber, e voltamos aqui... tudo bem?</p>
+                <p>Um grande beijo.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="quiz.js"></script>   
 </body>
 </html>
