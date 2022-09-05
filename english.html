@@ -65,7 +65,7 @@
             grid-area: controls;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 20px;
             flex-direction: column;
         }
 
@@ -86,7 +86,9 @@
         }
 
         #current-rate,
-        #current-pitch {
+        #current-pitch,
+        #current-voice,
+        #current-lang {
             background-color: rgba(0, 0, 0, 0.5);
             text-align: center;
             border-radius: var(--border-radius);
@@ -97,8 +99,14 @@
             height: 50px;
         }
 
+        .current-voice-wrapper, #current-voice, #current-lang {
+            width: 100%;
+        }
+
         .speech__settings {
-            font-style: italic;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
         }
  
         .speech__side {
@@ -160,11 +168,23 @@
             </header>
 
             <aside class="speech__controls">
-                <div>
-                    <label>Velocidade atual:</label>
-                    <input type="number" id="current-rate" value="1">
-                    <label>Tom de voz:</label>
-                    <input type="number" id="current-pitch" value="1">
+                <div class="speech__settings">
+                    <div>
+                        <label>Velocidade atual:</label>
+                        <input type="number" id="current-rate" value="1">
+                    </div>
+                    <div>
+                        <label>Tom de voz:</label>
+                        <input type="number" id="current-pitch" value="1">
+                    </div>
+                    <div class="current-voice-wrapper">
+                        <label>Linguagem:</label>
+                        <input type="text" id="current-lang" value="en-US">
+                    </div>
+                    <div class="current-voice-wrapper">
+                        <label>Voz</label>
+                        <select id="current-voice"></select>
+                    </div>
                 </div>
 
                 <div class="speech__actions">
@@ -199,12 +219,21 @@
         const $currentPitch = document.querySelector("#current-pitch");
         const $currentSpeechStatus = document.querySelector("#current-speech");
         const $tokens = document.querySelector("#tokens");
+        const $currentVoice = document.querySelector("#current-voice");
+        const $currentLanguage = document.querySelector("#current-lang");
         
         const speeches = parseSpeeches(getPlainSpeeches());
 
         let currentSpeech = 0;
+        let voices = [];
 
         displaySpeech();
+
+        populateVoiceList();
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
 
         document.querySelector("#speech-next").addEventListener("click", () => {
             currentSpeech = Math.min(speeches.length - 1, currentSpeech + 1);
@@ -217,31 +246,13 @@
         });
 
         document.querySelector("#speak").addEventListener("click", () => {
-            speechSynthesis.cancel();
-
             const content = $targetSpeechBody.textContent;
-            const utterance = new SpeechSynthesisUtterance();
-
-            utterance.lang = "en-US";
-            utterance.text = content;
-            utterance.rate = parseFloat($currentRate.value);
-            utterance.pitch = parseFloat($currentPitch.value);
-
-            speechSynthesis.speak(utterance);
+            speak(content);
         });
 
         document.querySelector("#tokens").addEventListener("click", (e) => {
             if (e.target.tagName === "SPAN") {
-                speechSynthesis.cancel();
-
-                const content = e.target.textContent.trim().replace(/[^0-9A-Z]+/gi, "");
-                const utterance = new SpeechSynthesisUtterance();
-
-                utterance.lang = "en-US";
-                utterance.text = content;
-                utterance.rate = parseFloat($currentRate.value);
-
-                speechSynthesis.speak(utterance);
+                speak(e.target.textContent.trim().replace(/[^0-9A-Z]+/gi, ""));
             }
         });
 
@@ -256,6 +267,62 @@
         document.querySelector("#cancel").addEventListener("click", () => {
             speechSynthesis.cancel();
         });
+
+        function speak(content) {
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance();
+
+            utterance.lang = $currentLanguage.value;
+            utterance.text = content;
+            utterance.rate = parseFloat($currentRate.value);
+            utterance.pitch = parseFloat($currentPitch.value);
+
+            const selectedOption = $currentVoice.selectedOptions[0].getAttribute("data-name");
+
+            for (let i = 0; i < voices.length; i++) {
+                if (voices[i].name === selectedOption) {
+                    utterance.voice = voices[i];
+                    break;
+                }
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function populateVoiceList() {
+            voices = speechSynthesis.getVoices().sort(function (a, b) {
+                const aname = a.name.toUpperCase();
+                const bname = b.name.toUpperCase();
+
+                if (aname < bname) {
+                    return -1;
+                } else if (aname == bname) {
+                    return 0;
+                } else {
+                    return +1;
+                }
+            });
+
+            const selectedIndex = $currentVoice.selectedIndex < 0 ? 0 : $currentVoice.selectedIndex;
+            $currentVoice.innerHTML = "";
+
+            for (let i = 0; i < voices.length; i++) {
+                const option = document.createElement("option");
+
+                option.textContent = `${voices[i].name} (${voices[i].lang})`;
+
+                if (voices[i].default) {
+                    option.textContent += " -- PADRÃO";
+                }
+
+                option.setAttribute("data-lang", voices[i].lang);
+                option.setAttribute("data-name", voices[i].name);
+                $currentVoice.appendChild(option);
+            }
+
+            $currentVoice.selectedIndex = selectedIndex;
+        }
 
         function displaySpeech() {
             $currentSpeechStatus.textContent = (currentSpeech + 1) + "/" + speeches.length;
