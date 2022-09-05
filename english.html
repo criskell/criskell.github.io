@@ -143,6 +143,10 @@
                 display: flex;
                 flex-direction: column;
             }
+
+            .speech__source {
+                order: 1;
+            }
         }
     </style>
 </head>
@@ -221,6 +225,7 @@
             utterance.lang = "en-US";
             utterance.text = content;
             utterance.rate = parseFloat($currentRate.value);
+            utterance.pitch = parseFloat($currentPitch.value);
 
             speechSynthesis.speak(utterance);
         });
