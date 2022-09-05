@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>americano</title>
+ 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --border-radius: 15px;
+        }
+ 
+        body {
+            font-family: Inter, sans-serif;
+            color: #fff;
+            background-image: url(https://i.ytimg.com/vi/XzTCntGgNJU/maxresdefault.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+ 
+        .app {
+            padding: 2% 5%;
+        }
+ 
+        .speech {
+            display: grid;
+
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-areas: "header header" "controls controls" "target source";
+            grid-gap: 10px;
+        }
+
+        .speech__header {
+            padding: 15px 25px;
+            
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: var(--border-radius);
+
+            grid-area: header;
+
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+
+            gap: 25px;
+        }
+
+        .speech__controls {
+            padding: 15px 25px;
+            
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: var(--border-radius);
+
+            grid-area: controls;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        .speech__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            font: inherit;
+            padding: 10px;
+            color: #000;
+            background-color: #fff;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        #current-rate,
+        #current-pitch {
+            background-color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border-radius: var(--border-radius);
+            border: none;
+            color: #fff;
+            font: inherit;
+            width: 70px;
+            height: 50px;
+        }
+
+        .speech__settings {
+            font-style: italic;
+        }
+ 
+        .speech__side {
+            min-height: 500px;
+            background-color: rgba(0, 0, 0, .5);
+            border-radius: var(--border-radius);
+            padding: 25px;
+        }
+
+        .speech__side > header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            justify-content: space-between;
+            min-height: 40px;
+        }
+ 
+        .speech__phrase, #tokens {
+            font-size: 2.5em;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        #tokens > span {
+            cursor: pointer;
+        }
+
+        .speech__source {
+            grid-area: source;
+        }
+ 
+        .speech__target {
+            grid-area: target;
+        }
+
+        .speech__target .speech__phrase {
+            display: none;
+        }
+ 
+        @media screen and (max-width: 700px) {
+            .speech {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <section class="speech">
+            <header class="speech__header">
+                <h1>Fala <span id="current-speech"></span></h1>
+                <button class="btn" id="speech-prev">Anterior</button>
+                <button class="btn" id="speech-next">Próximo</button>
+            </header>
+
+            <aside class="speech__controls">
+                <div>
+                    <label>Velocidade atual:</label>
+                    <input type="number" id="current-rate" value="1">
+                    <label>Tom de voz:</label>
+                    <input type="number" id="current-pitch" value="1">
+                </div>
+
+                <div class="speech__actions">
+                    <button class="btn" id="speak">Falar</button>
+                    <button class="btn" id="pause">Pausar</button>
+                    <button class="btn" id="resume">Retomar</button>
+                    <button class="btn" id="cancel">Cancelar</button>
+                </div>
+            </aside>
+ 
+            <section class="speech__side speech__source">
+                <header>
+                    <h1>Português</h1>
+                </header>
+                <p class="speech__phrase"></p>
+            </section>
+ 
+            <section class="speech__side speech__target">
+                <header>
+                    <h1 class="speak-all">Inglês</h1>
+                </header>
+                <p class="speech__phrase"></p>
+                <p id="tokens">
+                </p>
+            </section>
+        </section>
+    </main>
+    <script>
+        const $sourceSpeechBody = document.querySelector(".speech__source > .speech__phrase");
+        const $targetSpeechBody = document.querySelector(".speech__target > .speech__phrase");
+        const $currentRate = document.querySelector("#current-rate");
+        const $currentPitch = document.querySelector("#current-pitch");
+        const $currentSpeechStatus = document.querySelector("#current-speech");
+        const $tokens = document.querySelector("#tokens");
+        
+        const speeches = parseSpeeches(getPlainSpeeches());
+
+        let currentSpeech = 0;
+
+        displaySpeech();
+
+        document.querySelector("#speech-next").addEventListener("click", () => {
+            currentSpeech = Math.min(speeches.length - 1, currentSpeech + 1);
+            displaySpeech();
+        });
+
+        document.querySelector("#speech-prev").addEventListener("click", () => {
+            currentSpeech = Math.max(0, currentSpeech - 1);
+            displaySpeech();
+        });
+
+        document.querySelector("#speak").addEventListener("click", () => {
+            speechSynthesis.cancel();
+
+            const content = $targetSpeechBody.textContent;
+            const utterance = new SpeechSynthesisUtterance();
+
+            utterance.lang = "en-US";
+            utterance.text = content;
+            utterance.rate = parseFloat($currentRate.value);
+
+            speechSynthesis.speak(utterance);
+        });
+
+        document.querySelector("#tokens").addEventListener("click", (e) => {
+            if (e.target.tagName === "SPAN") {
+                speechSynthesis.cancel();
+
+                const content = e.target.textContent.trim().replace(/[^0-9A-Z]+/gi, "");
+                const utterance = new SpeechSynthesisUtterance();
+
+                utterance.lang = "en-US";
+                utterance.text = content;
+                utterance.rate = parseFloat($currentRate.value);
+
+                speechSynthesis.speak(utterance);
+            }
+        });
+
+        document.querySelector("#pause").addEventListener("click", () => {
+            speechSynthesis.pause();
+        });
+
+        document.querySelector("#resume").addEventListener("click", () => {
+            speechSynthesis.resume();
+        });
+
+        document.querySelector("#cancel").addEventListener("click", () => {
+            speechSynthesis.cancel();
+        });
+
+        function displaySpeech() {
+            $currentSpeechStatus.textContent = (currentSpeech + 1) + "/" + speeches.length;
+
+            const speech = speeches[currentSpeech];
+
+            $sourceSpeechBody.textContent = speech.source;
+            $targetSpeechBody.textContent = speech.target;
+
+            $tokens.innerHTML = speech.target.split(" ")
+                .map((token) => `<span>${token}</span>`)
+                .join(" ");
+        }
+
+        function parseSpeeches(plainSpeeches) {
+            return plainSpeeches
+                .split(">")
+                .map((speech) => speech.trim())
+                .filter((x) => x)
+                .reduce(
+                    (speeches, sourceOrTarget, index, speechSplit) =>
+                        index % 2 === 0
+                            ? [...speeches, ({
+                                source: sourceOrTarget,
+                                target: speechSplit[index + 1] ?? null
+                            })]
+                            : speeches,
+                    []
+                );
+        }
+
+        function getPlainSpeeches() {
+            return `
+> Boa noite, meu nome é Cristiano, tenho 17 anos. Atualmente estou terminando o ensino médio na escola Argeo Pinto Dias.
+> Good night, my name is Cristiano, I'm 17 years old. I am currently graduating from high school at Argeo Pinto Dias school.
+
+> Irei falar sobre minha carreira pretendida, meus cursos e objetivos de vida.
+> I will talk about my intended career, my courses and life goals.
+
+> Em relação a minha carreira, pretendo trabalhar no setor de Tecnologia da Informação, talvez na área de desenvolvimento de software.
+> Regarding my career, I intend to work in the Information Technology sector, perhaps in the area of software development.
+
+> Estou estudando atualmente criação de websites e construindo um portfólio para também trabalhar como freelancer ano que vem.
+> I am currently studying website design and building a portfolio to also work as a freelancer next year.
+
+> Estou realizando um curso online de JavaScript e Excel.
+> I'm taking an online course in JavaScript and Excel.
+
+> No momento prefiro fazer um curso de nível técnico, como técnico em tecnologia da informação, eletrônica, redes ou mecatrônica na ETEC ou SENAI. Estou estudando para o vestibular.
+> At the moment I prefer to take a technical level course, as a technician in information technology, electronics, networks or mechatronics at ETEC or SENAI. I'm studying for the entrance exam. 
+
+> Não tenho certeza de qual é meu objetivo de vida, mas meu objetivo agora é me preparar financeiramente, mentalmente e fisicamente para qualquer caminho que a vida me obrigue a seguir e seguir em frente.
+> I'm not sure what my life goal is, but my goal right now is to prepare myself financially, mentally and physically for whatever paths life forces me to take and keep moving forward.
+            `;
+        }
+    </script>
+</body>
+</html> 
